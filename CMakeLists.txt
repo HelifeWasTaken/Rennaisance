@@ -24,12 +24,25 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glm)
 FetchContent_GetProperties(glm)
 
+FetchContent_Declare(
+        imgui
+        GIT_REPOSITORY https://github.com/ocornut/imgui
+        GIT_TAG v1.90-docking
+        GIT_SHALLOW 1
+)
+FetchContent_MakeAvailable(imgui)
+
 find_package(OpenGL REQUIRED)
 
-include_directories(include lib/gl3w/include)
+include_directories(include lib/gl3w/include ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
 
-file(GLOB_RECURSE SOURCES "main.cpp" "src/*.cpp" "lib/gl3w/*.c")
-file(GLOB_RECURSE HEADERS "include/*.h")
+file(GLOB SOURCES main.cpp src/*.cpp
+                          lib/gl3w/*.c
+                          ${imgui_SOURCE_DIR}/*.cpp
+                          ${imgui_SOURCE_DIR}/backends/imgui*glfw*.cpp
+                          ${imgui_SOURCE_DIR}/backends/imgui*opengl3*.cpp)
+
+file(GLOB_RECURSE HEADERS include/*.h ${imgui_SOURCE_DIR}/*.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_link_libraries(${PROJECT_NAME} glfw glm OpenGL::GL)

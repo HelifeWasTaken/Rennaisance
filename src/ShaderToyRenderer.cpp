@@ -99,6 +99,8 @@ void ShaderToyRenderer::Update(Window& window, const glm::vec2& mousePos, bool m
     m_new_uniforms.m_frame = m_old_uniforms.m_frame + 1;
     m_new_uniforms.m_mouse = glm::vec4(mousePos, mouseButtonLeft ? 1.0f : 0.0f, mouseButtonRight ? 1.0f : 0.0f);
 
+    //std::cout << "Resolution: " << m_new_uniforms.m_resolution.x << "x" << m_new_uniforms.m_resolution.y << std::endl;
+    //std::cout << "Window size: " << window.getSize().x << "x" << window.getSize().y << std::endl;
     if (m_new_uniforms.m_resolution != glm::vec3(window.getSize(), 0.0f)) {
         m_new_uniforms.m_resolution = glm::vec3(window.getSize(), 0.0f);
         CATCH_SHADER_EXCEPTION_AND_DO_NOTHING(m_shader.setUniform("iResolution", &m_new_uniforms.m_resolution, 1));

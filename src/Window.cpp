@@ -6,6 +6,10 @@ License: GNU v3.0
 */
 
 #include "renn/Window.hpp"
+#include <mutex>
+
+static bool initialized = false;
+static int windowCount = 0;
 
 namespace renn {
     // dummy callbacks
@@ -15,10 +19,29 @@ namespace renn {
     void d_scrollCallback(GLFWwindow*, double, double) {}
     void d_windowSizeCallback(GLFWwindow*, int, int) {}
 
-    Window::Window(const std::string& title, const glm::ivec2& size) : m_title(title), m_size(size) {
-        if (!glfwInit()) {
-            throw WindowException("Failed to initialize GLFW");
+    static void initialize_glfw() {
+        windowCount++;
+        if (!initialized) {
+            if (!glfwInit()) {
+                throw WindowException("Failed to initialize GLFW");
+            }
+            initialized = true;
         }
+    }
+
+    static void uninitialized_glfw() {
+        windowCount--;
+        if (initialized && windowCount == 0) {
+            glfwTerminate();
+            initialized = false;
+        }
+        if (windowCount < 0) {
+            throw WindowException("Window count is negative");
+        }
+    }
+
+    Window::Window(const std::string& title, const glm::ivec2& size) : m_title(title), m_size(size) {
+        initialize_glfw();
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, RENN_WINDOW_OPENGL_VERSION_MAJOR);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, RENN_WINDOW_OPENGL_VERSION_MINOR);
@@ -40,6 +63,17 @@ namespace renn {
         }
         setClearColor(glm::vec4(0.0f, 0.0f, 0.4f, 0.0f));
         setCallbacks();
+
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
+                       | ImGuiConfigFlags_DockingEnable
+                     //| ImGuiConfigFlags_ViewportsEnable;
+                     ;
+        ImGui::StyleColorsDark();
+        ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+        ImGui_ImplOpenGL3_Init();
     }
 
     void Window::setTitle(const std::string& title) {
@@ -65,6 +99,14 @@ namespace renn {
     }
 
     void Window::render() const {
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(m_window);
+        }
         glfwSwapBuffers(m_window);
     }
 
@@ -78,6 +120,9 @@ namespace renn {
 
     void Window::clear() const {
         glCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
     }
 
     void Window::setClearColor(const glm::vec4& color) const {
@@ -101,10 +146,14 @@ namespace renn {
         glfwSetCursorPosCallback(m_window, cursorPosCallback);
         glfwSetMouseButtonCallback(m_window, mouseButtonCallback);
         glfwSetScrollCallback(m_window, scrollCallback);
+        glfwSetWindowSizeCallback(m_window, windowSizeCallback);
     }
 
     Window::~Window() {
         glfwDestroyWindow(m_window);
-        glfwTerminate();
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+        uninitialized_glfw();
     }
 }

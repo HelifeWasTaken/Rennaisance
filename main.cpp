@@ -81,12 +81,16 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+    if (ImGui::GetCurrentContext() != nullptr)
+        ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 }
 
 static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {
     cx = xpos;
     cy = ypos;
+    if (ImGui::GetCurrentContext() != nullptr)
+        ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -120,6 +124,15 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         default:
             break;
     }
+
+    if (ImGui::GetCurrentContext() != nullptr)
+        ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
+}
+
+void window_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    if (ImGui::GetCurrentContext() != nullptr)
+        ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
 }
 
 void mouseDragging(double width, double height)
@@ -141,15 +154,19 @@ void mouseDragging(double width, double height)
     lastMouseY = cy;
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <path to shader>" << std::endl;
+        return 1;
+    }
 
     try {
         glViewport(0, 0, app.getSize().x, app.getSize().y);
         //glEnable(GL_DEPTH_TEST);
         //glDepthFunc(GL_LESS);
 
-        app.setCallbacks(key_callback, cursor_pos_callback, mouse_button_callback, nullptr);
+        app.setCallbacks(key_callback, cursor_pos_callback, mouse_button_callback, window_scroll_callback, window_size_callback);
 
         /*
         std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
@@ -178,10 +195,9 @@ int main()
 
         Bunny bunny;
         */
-       renn::ShaderToyRenderer renderer(app, renn::load_file("../shaders/Shadertoy/Happy.frag"));
+       renn::ShaderToyRenderer renderer(app, renn::load_file(argv[1]));
 
         while (!app.shouldClose()) {
-            app.pollEvents();
             app.clear();
             //bunny.draw();
             //calculateAllAgain();
@@ -190,7 +206,12 @@ int main()
             renderer.Update(app, glm::vec2(cx, cy), lButtonDown, rButtonDown);
             renderer.Render();
 
+            ImGui::Begin("Test window!");
+            ImGui::Text("Window size: %d x %d", app.getSize().x, app.getSize().y);
+            ImGui::End();
+
             app.render();
+            app.pollEvents();
         }
         return 0;
     } catch (const std::exception& e) {

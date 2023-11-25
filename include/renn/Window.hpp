@@ -17,6 +17,10 @@ License: GNU v3.0
 #include <functional>
 #include <stdexcept>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #ifndef RENN_WINDOW_OPENGL_VERSION_MAJOR
 #define RENN_WINDOW_OPENGL_VERSION_MAJOR 4
 #endif
