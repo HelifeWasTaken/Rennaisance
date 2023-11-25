@@ -9,31 +9,31 @@ License: GNU v3.0
 
 namespace renn {
 
-static const char *shader_toy_lib = R"(
-#version 450
+// If is Windows or OPENGL ES, use this shader
+#if defined(_WIN32) || defined(_WIN64) || defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+#define RENN_SHADER_TOY_HEADER RENN_OPENGL_GLSL_VERSION \
+"precision highp float;\nprecision highp int;\nprecision highp sampler2D;\n"
+#else
+#define RENN_SHADER_TOY_HEADER RENN_OPENGL_GLSL_VERSION "\n"
+#endif
 
-precision highp float;
-precision highp int;
-precision highp sampler2D;
-
-in vec2 vtexCoord;
-layout(location = 0) out vec4 fragColor;
-
-uniform vec3 iResolution;
-uniform float iTime;
-uniform float iTimeDelta;
-uniform int iFrame;
-uniform float iFrameRate;
-uniform float iChannelTime[4];
-uniform vec3 iChannelResolution[4];
-uniform vec4 iMouse;
-layout(binding = 0) uniform sampler2D iChannel0;
-layout(binding = 1) uniform sampler2D iChannel1;
-layout(binding = 2) uniform sampler2D iChannel2;
-layout(binding = 3) uniform sampler2D iChannel3;
-uniform vec4 iDate;
-uniform float iSampleRate;
-)";
+static const char *shader_toy_lib = RENN_SHADER_TOY_HEADER \
+"in vec2 vtexCoord;\n" \
+"layout(location = 0) out vec4 fragColor;\n" \
+"uniform vec3 iResolution;\n" \
+"uniform float iTime;\n" \
+"uniform float iTimeDelta;\n" \
+"uniform int iFrame;\n" \
+"uniform float iFrameRate;\n" \
+"uniform float iChannelTime[4];\n" \
+"uniform vec3 iChannelResolution[4];\n" \
+"uniform vec4 iMouse;\n" \
+"layout(binding = 0) uniform sampler2D iChannel0;\n" \
+"layout(binding = 1) uniform sampler2D iChannel1;\n" \
+"layout(binding = 2) uniform sampler2D iChannel2;\n" \
+"layout(binding = 3) uniform sampler2D iChannel3;\n" \
+"uniform vec4 iDate;\n" \
+"uniform float iSampleRate;\n";
 
 static const char *shader_toy_main = R"(
 void main(void) {
@@ -42,23 +42,14 @@ void main(void) {
 }
 )";
 
-static const char *shader_toy_vertex_shader = R"(
-precision highp float;
-precision highp int;
-precision highp sampler2D;
-
-// Vertex attributes
-layout(location = 0) in vec3 position;
-layout(location = 1) in vec2 texCoord;
-
-// Texture coord for fragment
-out vec2 vtexCoord;
-
-void main() {
-	vtexCoord = texCoord;
-	gl_Position = vec4(position, 1.0);
-}
-    )";
+static const char *shader_toy_vertex_shader = RENN_SHADER_TOY_HEADER \
+"layout(location = 0) in vec3 position;\n" \
+"layout(location = 1) in vec2 texCoord;\n" \
+"out vec2 vtexCoord;\n" \
+"void main() {\n" \
+"	vtexCoord = texCoord;\n" \
+"	gl_Position = vec4(position, 1.0);\n" \
+"}";
 
 static const GLfloat shader_toy_data[] = {
     -1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // Top-left

@@ -143,6 +143,7 @@ void mouseDragging(double width, double height)
 
 int main()
 {
+
     try {
         glViewport(0, 0, app.getSize().x, app.getSize().y);
         //glEnable(GL_DEPTH_TEST);

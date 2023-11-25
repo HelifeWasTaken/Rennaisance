@@ -9,6 +9,8 @@ License: GNU v3.0
 
 #include "GL.hpp"
 
+#include "renn/Utils.h"
+
 #include <string>
 #include <glm/glm.hpp>
 #include <exception>
@@ -16,11 +18,18 @@ License: GNU v3.0
 #include <stdexcept>
 
 #ifndef RENN_WINDOW_OPENGL_VERSION_MAJOR
-#define RENN_WINDOW_OPENGL_VERSION_MAJOR 3
+#define RENN_WINDOW_OPENGL_VERSION_MAJOR 4
 #endif
 
 #ifndef RENN_WINDOW_OPENGL_VERSION_MINOR
-#define RENN_WINDOW_OPENGL_VERSION_MINOR 3
+#define RENN_WINDOW_OPENGL_VERSION_MINOR 2
+#endif
+
+#if (RENN_WINDOW_OPENGL_VERSION_MAJOR << 8 | RENN_WINDOW_OPENGL_VERSION_MINOR << 4) >= 0x420
+#define RENN_OPENGL_GLSL_VERSION "#version " RENN_STRINGIFY_MACRO(RENN_WINDOW_OPENGL_VERSION_MAJOR) RENN_STRINGIFY_MACRO(RENN_WINDOW_OPENGL_VERSION_MINOR) "0 core\n"
+#else
+#define RENN_OPENGL_GLSL_VERSION "#version 420 core\n"
+#pragma message("OpenGL version is lower than 4.2, using #version 420 core this may cause issues")
 #endif
 
 #ifndef RENN_WINDOW_OPENGL_PROFILE

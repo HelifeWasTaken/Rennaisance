@@ -23,4 +23,6 @@ namespace renn {
         UtilsException(const std::string& message) : std::runtime_error(message) {}
     };
 
+    #define RENN_EXPAND_MACRO(x) #x
+    #define RENN_STRINGIFY_MACRO(x) RENN_EXPAND_MACRO(x)
 }

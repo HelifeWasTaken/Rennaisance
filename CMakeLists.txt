@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22.1)
 project(GraphicalProgramming_7002810)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -33,3 +33,10 @@ file(GLOB_RECURSE HEADERS "include/*.h")
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_link_libraries(${PROJECT_NAME} glfw glm OpenGL::GL)
+
+if (UNIX)
+        target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Wno-volatile -fpermissive -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function)
+endif()
+
+add_executable(valid_opengl_version "./external/valid_opengl_versions.cpp")
+target_link_libraries(valid_opengl_version glfw OpenGL::GL)

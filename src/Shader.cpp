@@ -14,8 +14,6 @@ License: GNU v3.0
 namespace renn {
 
     GLuint compileShader(const std::string& source, GLenum type) {
-        std::cerr << "Compiling shader " << source << std::endl;
-
         GLuint shader = glCreateShader(type);
         const char* src = source.c_str();
         glShaderSource(shader, 1, &src, nullptr);
@@ -29,6 +27,7 @@ namespace renn {
             std::vector<GLchar> infoLog(maxLength);
             glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
             glDeleteShader(shader);
+            std::cerr << source << std::endl;
             throw ShaderException("Failed to compile shader: " + std::string(infoLog.begin(), infoLog.end()));
         }
 
